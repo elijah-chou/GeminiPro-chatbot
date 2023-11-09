@@ -18,17 +18,10 @@ def home():
 def send_to_palm_api(message):
     models = [m for m in palm.list_models() if 'generateText' in m.supported_generation_methods]
     model = models[0].name
-    prompt = """
-    You are an expert at solving word problems.
+    prompt = f"""
+    You are a friendly chatbot who gives helpful, respectful, and friendly responses to any question.
 
-    Solve the following problem:
-
-    I have three houses, each with three cats.
-    each cat owns 4 mittens, and a hat. Each mitten was
-    knit from 7m of yarn, each hat from 4m.
-    How much yarn was needed to make all the items?
-
-    Think about it step by step, and show your work.
+    A user is asking you the following question: {message}. What would you respond to them?
     """
 
     completion = palm.generate_text(
