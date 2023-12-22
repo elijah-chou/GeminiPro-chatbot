@@ -1,27 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My App</title>
+    <title>ChatGeminiPro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+    <style>
+        h1 {
+            text-align: center;
+        }
+        .user-message {
+            text-align: left;
+        }
+        .model-message {
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
     <section class="section">
         <div class="container">
-            <h1 class="title">Welcome to My App</h1>
-            <form method="POST">
-                <div class="field">
-                    <label class="label">Message</label>
-                    <div class="control">
-                        <textarea class="textarea" name="message" placeholder="Enter your message here"></textarea>
-                    </div>
+            <h1 class="title">Chat with Gemini Pro</h1>
+            <hr>
+            {% for chat in chat_history %}
+                <div class="box {{ 'user-message' if chat.role == 'user' else 'model-message' }}">
+                    {% if chat.role == "user" %}
+                        <p><strong>User:</strong> 
+                        {% for line in chat.text.splitlines() %}
+                            {{ line }}<br>
+                        {% endfor %}
+                    </p>
+                    {% else %}
+                        <p><strong>Model:</strong>
+                            {% for line in chat.text.splitlines() %}
+                                {{ line }}<br>
+                            {% endfor %}
+                        </p>
+                    {% endif %}
                 </div>
-                <div class="field">
-                    <div class="control">
-                        <button class="button is-link" type="submit">Submit</button>
-                    </div>
-                </div>
-            </form>
+            {% endfor %}
         </div>
+        <hr>
+        <form method="POST">
+            <div class="field">
+                <div class="control">
+                    <textarea class="textarea" name="message" placeholder="Enter your message here"></textarea>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <button class="button is-link" type="submit">Send Message</button>
+                </div>
+            </div>
+        </form>
     </section>
 </body>
+<div id="bottom"></div>
+<script>
+    function bottom() {
+        document.getElementById( 'bottom' ).scrollIntoView();
+    };
+    bottom();
+</script>
 </html>

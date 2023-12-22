@@ -1,9 +1,11 @@
 from flask import Flask, request, render_template
-import requests
-import google.generativeai as palm
+import google.generativeai as genai
 import config
 
-palm.configure(api_key=config.api_key)
+api_key = config.api_key
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel('gemini-pro')
+chat = model.start_chat(history=[])
 
 app = Flask(__name__)
 
@@ -11,27 +13,25 @@ app = Flask(__name__)
 def home():
     if request.method == 'POST':
         message = request.form.get('message')
-        response = send_to_palm_api(message)
-        return render_template('response.html', response=response)
+        chat.send_message(message)
+        formatted_history = parse_chat_history(chat.history)
+        return render_template('index.html', chat_history=formatted_history)
     return render_template('index.html')
 
-def send_to_palm_api(message):
-    models = [m for m in palm.list_models() if 'generateText' in m.supported_generation_methods]
-    model = models[0].name
-    prompt = f"""
-    You are a friendly chatbot who gives helpful, respectful, and friendly responses to any question.
+def parse_chat_history(chat_history):
+    parsed_history = []
+    for chat in chat_history:
+        chat = str(chat)
+        role = chat[chat.index('role')+7:chat.rfind('\"')]
+        text = chat[chat.index('text')+7:chat.rfind('}')-2]
+        text = parse_text_to_html(text)
+        parsed_history.append({'role': role, 'text': text})
+    return parsed_history
 
-    A user is asking you the following question: {message}. What would you respond to them?
-    """
-
-    completion = palm.generate_text(
-        model=model,
-        prompt=prompt,
-        temperature=0,
-        # The maximum length of the response
-        max_output_tokens=800,
-    )
-    return completion.result
+def parse_text_to_html(text):
+    text = text.replace('\\n', '\n')
+    text = text.replace("\\'", "\'")
+    return text
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
